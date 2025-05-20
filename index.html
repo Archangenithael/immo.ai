@@ -1,0 +1,2760 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMMO.AI - Solution intelligente pour professionnels de l'immobilier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e6f1ff',
+                            100: '#cce3ff',
+                            200: '#99c7ff',
+                            300: '#66aaff',
+                            400: '#338eff',
+                            500: '#0072FF',
+                            600: '#005bcc',
+                            700: '#004499',
+                            800: '#002d66',
+                            900: '#001733',
+                        },
+                        secondary: {
+                            500: '#FF5B7F',
+                        },
+                        success: {
+                            500: '#00D68F', 
+                        },
+                        warning: {
+                            500: '#FFAA00',
+                        },
+                        info: {
+                            500: '#00C7E5',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'typing': 'typing 1.5s steps(30, end) infinite',
+                        'blink': 'blink .5s step-end infinite',
+                        'fade-in-up': 'fadeInUp 0.5s ease-out'
+                    },
+                    keyframes: {
+                        typing: {
+                            'from': { width: '0' },
+                            'to': { width: '100%' }
+                        },
+                        blink: {
+                            'from, to': { borderColor: 'transparent' },
+                            '50%': { borderColor: 'currentColor' }
+                        },
+                        fadeInUp: {
+                            '0%': {
+                                opacity: '0',
+                                transform: 'translateY(10px)'
+                            },
+                            '100%': {
+                                opacity: '1',
+                                transform: 'translateY(0)'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .dark .glass {
+            background: rgba(23, 25, 35, 0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0072FF 0%, #00C6FF 100%);
+        }
+        
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #004499 0%, #00586E 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #0072FF 0%, #00C6FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .animate-progress {
+            animation: progress 2s ease-in-out forwards;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        .grid-dashboard {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(100px, auto);
+            gap: 1rem;
+        }
+        
+        .pulse-dot {
+            position: relative;
+        }
+        
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -5px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #00D68F;
+            box-shadow: 0 0 0 0 rgba(0, 214, 143, 1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 214, 143, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 214, 143, 0);
+            }
+        }
+        
+        .typing-dots::after {
+            content: '';
+            animation: typing-dots 1.5s infinite;
+        }
+        
+        @keyframes typing-dots {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+            100% { content: '.'; }
+        }
+        
+        .message-bubble-user {
+            border-radius: 18px 18px 0 18px;
+        }
+        
+        .message-bubble-ai {
+            border-radius: 18px 18px 18px 0;
+        }
+        
+        .chat-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+        }
+        
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.5);
+            border-radius: 10px;
+        }
+    </style>
+    <meta name="description" content="Immobilier assisté par IA ">
+</head>
+<body class="min-h-screen transition-colors duration-300 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- App Container -->
+    <div id="app" class="relative">
+        <!-- AI Coach Screen (hidden initially) -->
+        <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white dark:bg-gray-900 hidden">
+            <div class="w-full max-w-lg p-6 space-y-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col h-[90vh]">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 rounded-full bg-primary-500/10">
+                            <i class="fas fa-robot text-primary-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-extrabold gradient-text">IMMO.AI Coach</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Votre assistant personnel intelligent</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="theme-toggle-welcome" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-hidden flex flex-col">
+                    <div id="chat-container" class="flex-1 overflow-y-auto py-4 space-y-4 chat-container pr-2">
+                        <!-- Messages will be added here dynamically -->
+                        <div class="flex items-end space-x-2 animate-fade-in-up">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">Bonjour Alexandre ! Ravi de vous retrouver. Comment puis-je vous aider aujourd'hui avec votre agence immobilière ?</p>
+                                <span class="text-xs text-gray-500 mt-1 block">9:03</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end justify-end space-x-2 animate-fade-in-up" style="animation-delay: 0.5s">
+                            <div class="bg-primary-500 p-3 rounded-lg message-bubble-user text-white max-w-[85%]">
+                                <p class="text-sm">Bonjour ! J'ai beaucoup d'emails non traités aujourd'hui. Peux-tu m'aider à les prioriser ?</p>
+                                <span class="text-xs text-white/70 mt-1 block">9:05</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <img src="https://fakeimg.pl/60x60" alt="Profile" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end space-x-2 animate-fade-in-up" style="animation-delay: 1.0s">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">Bien sûr, je viens d'analyser votre boîte de réception. J'ai détecté <span class="font-semibold">7 emails prioritaires</span> qui nécessitent votre attention :</p>
+                                <ul class="text-sm list-disc pl-5 mt-2 space-y-1">
+                                    <li>3 demandes de visites urgentes</li>
+                                    <li>2 offres d'achat pour l'appartement rue des Lilas</li>
+                                    <li>1 message de Mme Dupont concernant la signature prévue demain</li>
+                                    <li>1 email du notaire pour le dossier Martin</li>
+                                </ul>
+                                <p class="text-sm mt-2">Souhaitez-vous que je prépare des réponses automatiques pour certains d'entre eux ?</p>
+                                <span class="text-xs text-gray-500 mt-1 block">9:06</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end justify-end space-x-2 animate-fade-in-up" style="animation-delay: 1.5s">
+                            <div class="bg-primary-500 p-3 rounded-lg message-bubble-user text-white max-w-[85%]">
+                                <p class="text-sm">Oui s'il te plaît ! Tu peux répondre aux demandes de visites en proposant des créneaux pour demain et après-demain. Pour Mme Dupont, confirme bien l'heure et le lieu de RDV.</p>
+                                <span class="text-xs text-white/70 mt-1 block">9:07</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <img src="https://fakeimg.pl/60x60" alt="Profile" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end space-x-2 animate-fade-in-up" style="animation-delay: 2.0s">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">Je m'en occupe ! <span class="inline-block animate-pulse-slow"><i class="fas fa-cog"></i></span></p>
+                                <span class="text-xs text-gray-500 mt-1 block">9:08</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end space-x-2 animate-fade-in-up" style="animation-delay: 2.5s">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">✓ J'ai préparé et envoyé les réponses ! Aussi, j'ai remarqué que vous avez 3 nouvelles demandes d'acquéreurs potentiels dans le secteur de Saint-Cloud où vous venez de mettre en vente la Villa Magnolia. Voulez-vous que je leur propose une visite groupée samedi ?</p>
+                                <span class="text-xs text-gray-500 mt-1 block">9:09</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end justify-end space-x-2 animate-fade-in-up" style="animation-delay: 3.0s">
+                            <div class="bg-primary-500 p-3 rounded-lg message-bubble-user text-white max-w-[85%]">
+                                <p class="text-sm">C'est une excellente idée ! Propose leur 14h et 16h comme créneaux. Au fait, as-tu des statistiques sur les performances de mes annonces cette semaine ?</p>
+                                <span class="text-xs text-white/70 mt-1 block">9:11</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <img src="https://fakeimg.pl/60x60" alt="Profile" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-end space-x-2 animate-fade-in-up" style="animation-delay: 3.5s">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">Voici les performances de vos annonces cette semaine :</p>
+                                <div class="mt-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                                    <div class="space-y-2">
+                                        <div>
+                                            <p class="text-xs font-medium">Appartement Rue Victor Hugo</p>
+                                            <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                                                <div class="h-full bg-primary-500 rounded-full" style="width: 92%"></div>
+                                            </div>
+                                            <p class="text-xs text-right mt-1">92% de visites en plus</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium">Villa Magnolia</p>
+                                            <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                                                <div class="h-full bg-success-500 rounded-full" style="width: 78%"></div>
+                                            </div>
+                                            <p class="text-xs text-right mt-1">78% d'intérêt</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium">Studio Place de la République</p>
+                                            <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1">
+                                                <div class="h-full bg-warning-500 rounded-full" style="width: 45%"></div>
+                                            </div>
+                                            <p class="text-xs text-right mt-1">45% d'engagement</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs mt-3 text-gray-500">J'ai détecté une forte demande pour les biens avec terrasse ou balcon. Souhaitez-vous que j'ajoute cette information en évidence dans vos annonces ?</p>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1 block">9:12</span>
+                            </div>
+                        </div>
+                        
+                        <div id="typing-indicator" class="flex items-end space-x-2 opacity-0">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai">
+                                <div class="flex space-x-1">
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse" style="animation-delay: 0.2s"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse" style="animation-delay: 0.4s"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t dark:border-gray-700 pt-4 mt-auto">
+                        <div class="flex space-x-2">
+                            <div class="flex-1">
+                                <input type="text" id="chat-input" placeholder="Envoyez un message à votre coach IA..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100">
+                            </div>
+                            <button id="send-message" class="px-4 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Vos données sont sécurisées et confidentielles</span>
+                            </div>
+                            <button id="goto-dashboard-btn" class="text-primary-500 font-medium hover:text-primary-600 dark:hover:text-primary-400 text-sm">
+                                Accéder au tableau de bord <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Auth Screen (initial view) -->
+        <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white dark:bg-gray-900">
+            <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+                <div class="text-center">
+                    <h2 class="text-4xl font-extrabold gradient-text">IMMO.AI</h2>
+                    <p class="mt-2 text-gray-600 dark:text-gray-400">Solution IA pour les professionnels de l'immobilier</p>
+                </div>
+                
+                <div class="flex justify-center">
+                    <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_jcikwtux.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop="" autoplay=""></lottie-player>
+                </div>
+                
+                <form id="auth-form" class="mt-8 space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email professionnel</label>
+                        <div class="mt-1">
+                            <input id="email" name="email" type="email" required="" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100" placeholder="votre@agence-immobiliere.com">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
+                        <div class="mt-1">
+                            <input id="password" name="password" type="password" required="" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100" placeholder="••••••••">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="email-access" name="email-access" type="checkbox" class="w-5 h-5 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="email-access" class="font-medium text-gray-700 dark:text-gray-300">J'autorise IMMO.AI à accéder à ma boîte email professionnelle</label>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Nécessaire pour l'analyse et la classification automatique des emails.</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full px-6 py-3 text-base font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                            Se connecter
+                        </button>
+                    </div>
+                    
+                    <div class="text-center text-sm">
+                        <a href="#" class="font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                            Besoin d'aide ? Contactez notre support
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Main Application (hidden initially) -->
+        <div id="main-app" class="hidden">
+            <!-- Sidebar -->
+            <aside class="fixed inset-y-0 left-0 z-20 w-64 overflow-y-auto transition-all duration-300 bg-white dark:bg-gray-800 shadow-lg">
+                <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-2xl font-bold gradient-text">IMMO.AI</span>
+                    </div>
+                    <button id="collapse-sidebar" class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <i class="fas fa-bars text-gray-600 dark:text-gray-400"></i>
+                    </button>
+                </div>
+                
+                <div class="p-4">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="relative">
+                            <img src="https://fakeimg.pl/60x60" alt="Profile" class="w-10 h-10 rounded-full">
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium">Alexandre Dupont</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Agent Immobilier Senior</p>
+                        </div>
+                    </div>
+                    
+                    <nav class="space-y-1">
+                        <a href="#coach" id="nav-coach" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-primary-500 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 group">
+                            <i class="fas fa-robot w-6 h-6 mr-3 text-primary-500 dark:text-primary-400"></i>
+                            Coach IA
+                        </a>
+                        <a href="#dashboard" id="nav-dashboard" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-500 dark:hover:text-primary-400 group">
+                            <i class="fas fa-home w-6 h-6 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"></i>
+                            Tableau de bord
+                        </a>
+                        <a href="#crm" id="nav-crm" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-500 dark:hover:text-primary-400 group">
+                            <i class="fas fa-users w-6 h-6 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"></i>
+                            CRM Acquéreurs
+                        </a>
+                        <a href="#emails" id="nav-emails" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-500 dark:hover:text-primary-400 group">
+                            <i class="fas fa-envelope w-6 h-6 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"></i>
+                            Classification Emails
+                        </a>
+                        <a href="#analytics" id="nav-analytics" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-500 dark:hover:text-primary-400 group">
+                            <i class="fas fa-chart-line w-6 h-6 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"></i>
+                            Analytiques
+                        </a>
+                        <a href="#settings" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-primary-500 dark:hover:text-primary-400 group">
+                            <i class="fas fa-cog w-6 h-6 mr-3 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 dark:group-hover:text-primary-400"></i>
+                            Paramètres
+                        </a>
+                    </nav>
+                </div>
+                
+                <div class="absolute bottom-0 w-full p-4 border-t dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <button id="theme-toggle" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                        <button id="logout-btn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                            <i class="fas fa-sign-out-alt text-gray-600 dark:text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="transition-all duration-300 ml-64 min-h-screen">
+                <!-- Top Nav -->
+                <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm">
+                    <div class="flex items-center justify-between px-6 py-3">
+                        <div class="flex items-center space-x-4">
+                            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                <i class="fas fa-bars text-gray-600 dark:text-gray-400"></i>
+                            </button>
+                            <h1 id="page-title" class="text-xl font-semibold">Coach IA</h1>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="relative">
+                                <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 relative">
+                                    <i class="fas fa-bell text-gray-600 dark:text-gray-400"></i>
+                                    <span class="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-secondary-500 rounded-full">3</span>
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <div class="flex items-center space-x-2 cursor-pointer">
+                                    <span class="pulse-dot text-sm font-medium hidden md:block">IA active</span>
+                                    <i class="fas fa-robot text-primary-500"></i>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="w-12 h-12 rounded-full overflow-hidden">
+                                    <img src="https://fakeimg.pl/120x120" alt="Profile" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coach IA Content -->
+                <div id="coach-content" class="p-6">
+                    <div class="flex items-center justify-center">
+                        <div class="w-full max-w-4xl">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <div class="p-2 rounded-full bg-primary-500/10">
+                                        <i class="fas fa-robot text-primary-500 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold">Coach IA - Assistant personnel</h2>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Posez-moi vos questions ou demandez mon aide</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="main-chat-container" class="h-[50vh] overflow-y-auto border dark:border-gray-700 rounded-lg p-4 mb-4 chat-container"></div>
+                                
+                                <div class="flex space-x-2">
+                                    <div class="flex-1">
+                                        <input type="text" id="main-chat-input" placeholder="Posez une question à votre coach IA..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100">
+                                    </div>
+                                    <button id="main-send-message" class="px-4 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 flex items-center justify-center">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-500">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium mb-1">Gestion d'emails</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Classifiez et répondez automatiquement aux emails</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="p-2 rounded-full bg-green-100 dark:bg-green-900/20 text-green-500">
+                                            <i class="fas fa-file-contract"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium mb-1">Rédaction d'annonces</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Créez des descriptions attractives pour vos biens</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-500">
+                                            <i class="fas fa-chart-pie"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium mb-1">Analyse de marché</h3>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">Obtenez des insights sur votre secteur immobilier</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Content (hidden initially) -->
+                <div id="dashboard-content" class="p-6 hidden">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Emails traités aujourd'hui</p>
+                                    <h3 class="text-3xl font-bold mt-1">124</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>12% par rapport à hier</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-primary-50 dark:bg-primary-900/20">
+                                    <i class="fas fa-envelope text-xl text-primary-500"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-500 rounded-full animate-progress" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Nouveaux acquéreurs</p>
+                                    <h3 class="text-3xl font-bold mt-1">18</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>5% par rapport à hier</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-success-50 dark:bg-success-900/20">
+                                    <i class="fas fa-user-plus text-xl text-success-500"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-success-500 rounded-full animate-progress" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Emails prioritaires</p>
+                                    <h3 class="text-3xl font-bold mt-1">7</h3>
+                                    <p class="text-xs font-medium text-red-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>3 en attente</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-warning-50 dark:bg-warning-900/20">
+                                    <i class="fas fa-exclamation-circle text-xl text-warning-500"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-warning-500 rounded-full animate-progress" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Taux de complétion</p>
+                                    <h3 class="text-3xl font-bold mt-1">92%</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-check-circle mr-1"></i>Excellente performance</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-info-50 dark:bg-info-900/20">
+                                    <i class="fas fa-chart-pie text-xl text-info-500"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4 w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-info-500 rounded-full animate-progress" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Dashboard Widgets -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- IA Activity Chart -->
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Activité IA en temps réel</h3>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                        <i class="fas fa-sync-alt text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                    <select class="text-sm border border-gray-300 dark:border-gray-600 rounded-md p-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        <option>Aujourd'hui</option>
+                                        <option>Cette semaine</option>
+                                        <option>Ce mois</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="aiActivityChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent IA Actions -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Actions récentes de l'IA</h3>
+                                <button class="text-sm text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                                    Voir tout
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="mt-1 p-2 rounded-full bg-green-100 dark:bg-green-900/20 text-green-500">
+                                        <i class="fas fa-envelope-open text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium">Email priorisé</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Contact urgent d'un client VIP</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Il y a 2 minutes</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <div class="mt-1 p-2 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-500">
+                                        <i class="fas fa-user-plus text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium">Nouvel acquéreur détecté</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Ajout au CRM et envoi du questionnaire</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Il y a 15 minutes</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <div class="mt-1 p-2 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-500">
+                                        <i class="fas fa-tags text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium">Classification terminée</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">24 emails classés avec succès</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Il y a 32 minutes</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <div class="mt-1 p-2 rounded-full bg-orange-100 dark:bg-orange-900/20 text-orange-500">
+                                        <i class="fas fa-bell text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium">Rappel programmé</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Visite propriété Avenue Victor Hugo</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Il y a 45 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acquéreurs & Classification Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <!-- Acquéreurs potentiels -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Acquéreurs potentiels récents</h3>
+                                <div class="flex items-center space-x-2">
+                                    <div class="relative">
+                                        <input type="text" placeholder="Rechercher..." class="text-sm border border-gray-300 dark:border-gray-600 rounded-md p-2 pl-8 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        <i class="fas fa-search absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    </div>
+                                    <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                        <i class="fas fa-filter text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statut</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Urgence</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <tr>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Sophie Martin</div>
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">sophie.martin@example.com</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                                    Questionnaire complété
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                                    Urgente
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="#" class="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#" class="text-gray-500 hover:text-gray-600 dark:hover:text-gray-400">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Thomas Dubois</div>
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">thomas.dubois@example.com</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                                    En attente de réponse
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                                    Moyenne
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="#" class="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#" class="text-gray-500 hover:text-gray-600 dark:hover:text-gray-400">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Emma Petit</div>
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">emma.petit@example.com</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400">
+                                                    Déjà propriétaire
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                                    Faible
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="#" class="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 mr-3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#" class="text-gray-500 hover:text-gray-600 dark:hover:text-gray-400">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    Affichage de 3 sur 18 acquéreurs
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">
+                                        <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Page 1 sur 6</span>
+                                    <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                        <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Classification des emails -->
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Classification des emails récents</h3>
+                                <button class="text-sm text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                                    Voir tous les emails
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="p-2 rounded-full bg-red-100 dark:bg-red-900/20 text-red-500">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-medium">Demande urgente de visite</h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    Bonjour, je souhaiterais visiter l'appartement situé au 15 rue Victor Hugo dans les plus brefs délais. Je suis très...
+                                                </p>
+                                                <div class="flex items-center space-x-2 mt-2">
+                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">De: Jean Dupont</span>
+                                                    <span class="text-xs text-gray-400 dark:text-gray-500">Il y a 35 min</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-clock text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-3">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                            Urgence Élevée
+                                        </span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                            Visite
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="p-2 rounded-full bg-green-100 dark:bg-green-900/20 text-green-500">
+                                                <i class="fas fa-file-contract"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-medium">Finalisation contrat vente</h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    Cher Alexandre, je vous confirme notre accord pour la vente de la maison au 28 rue des Lilas. Pouvez-vous...
+                                                </p>
+                                                <div class="flex items-center space-x-2 mt-2">
+                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">De: Marie Leroux</span>
+                                                    <span class="text-xs text-gray-400 dark:text-gray-500">Il y a 1h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-clock text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-3">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                            Priorité Moyenne
+                                        </span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                            Contrat
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-500">
+                                                <i class="fas fa-question-circle"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-medium">Renseignements sur terrain</h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                    Bonjour, je suis intéressé par le terrain constructible situé à Saint-Cloud référence T23456. Pourriez-vous...
+                                                </p>
+                                                <div class="flex items-center space-x-2 mt-2">
+                                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400">De: Paul Renard</span>
+                                                    <span class="text-xs text-gray-400 dark:text-gray-500">Il y a 2h</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-1">
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-reply text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                            <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-clock text-gray-600 dark:text-gray-400 text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-3">
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                            Priorité Basse
+                                        </span>
+                                        <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+                                            Renseignement
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Insights Widget -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-medium">Insights IA</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="animate-pulse inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Mise à jour en temps réel</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-5 text-white">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-semibold">Tendance détectée</h4>
+                                        <p class="text-white/80 mt-1">Augmentation de 24% des demandes pour les appartements avec terrasse</p>
+                                        <button class="mt-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors duration-200">
+                                            Explorer
+                                        </button>
+                                    </div>
+                                    <div class="p-3 bg-white/20 rounded-full">
+                                        <i class="fas fa-chart-line text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-semibold">Opportunité</h4>
+                                        <p class="text-white/80 mt-1">3 clients potentiels pour le bien "Villa Magnolia" récemment ajouté</p>
+                                        <button class="mt-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors duration-200">
+                                            Contacter
+                                        </button>
+                                    </div>
+                                    <div class="p-3 bg-white/20 rounded-full">
+                                        <i class="fas fa-lightbulb text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-5 text-white">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-semibold">Rappel prioritaire</h4>
+                                        <p class="text-white/80 mt-1">Rendez-vous aujourd'hui à 14h avec M. Bertrand pour la signature</p>
+                                        <button class="mt-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors duration-200">
+                                            Voir agenda
+                                        </button>
+                                    </div>
+                                    <div class="p-3 bg-white/20 rounded-full">
+                                        <i class="fas fa-calendar-check text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CRM Acquéreurs Content -->
+                <div id="crm-content" class="p-6 hidden">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold mb-2">CRM Acquéreurs</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Gérez vos contacts et suivez leur parcours d'acquisition</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                            <div class="flex items-center">
+                                <div class="relative mr-4">
+                                    <input type="text" placeholder="Rechercher un acquéreur..." class="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100 w-64">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center text-sm">
+                                        <i class="fas fa-filter mr-2 text-gray-600 dark:text-gray-400"></i>
+                                        Filtres
+                                    </button>
+                                    <button class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center text-sm">
+                                        <i class="fas fa-sort mr-2 text-gray-600 dark:text-gray-400"></i>
+                                        Trier
+                                    </button>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                Nouvel acquéreur
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acquéreur</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Budget</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type recherché</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statut</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Score</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dernier contact</th>
+                                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                    <img src="https://fakeimg.pl/100x100" alt="User">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Sophie Martin</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">sophie.martin@example.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">350 000 € - 450 000 €</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Appartement 3 pièces</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Paris 15e, 16e</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                                Visite programmée
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mr-2">85%</div>
+                                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-success-500 rounded-full" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Hier</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">15:30</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div class="flex justify-end space-x-2">
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-phone text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-envelope text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                    <img src="https://fakeimg.pl/100x100" alt="User">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Jean Dubois</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">jean.dubois@example.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">500 000 € - 650 000 €</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Maison 5 pièces</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Proche banlieue Ouest</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                                Recherche active
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mr-2">62%</div>
+                                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-primary-500 rounded-full" style="width: 62%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Il y a 3 jours</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">10:15</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div class="flex justify-end space-x-2">
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-phone text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-envelope text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden">
+                                                    <img src="https://fakeimg.pl/100x100" alt="User">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Marie Leclerc</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">marie.leclerc@example.com</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">250 000 € - 300 000 €</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Studio / 2 pièces</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Paris 11e, 18e, 19e, 20e</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                                En réflexion
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mr-2">43%</div>
+                                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-warning-500 rounded-full" style="width: 43%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900 dark:text-gray-100">Il y a 1 semaine</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">14:45</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div class="flex justify-end space-x-2">
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-phone text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-envelope text-primary-500"></i>
+                                                </button>
+                                                <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                    <i class="fas fa-ellipsis-v text-gray-500 dark:text-gray-400"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-6 flex items-center justify-between">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
+                                Affichage de 3 sur 24 acquéreurs
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">
+                                    <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
+                                </button>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Page 1 sur 8</span>
+                                <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                    <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <h3 class="text-lg font-medium mb-4">Segmentation acquéreurs</h3>
+                            <div class="relative" style="height: 200px;">
+                                <canvas id="acquereursChart"></canvas>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-primary-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Recherche active</span>
+                                    </div>
+                                    <span class="text-sm font-medium">45%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-success-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Visite programmée</span>
+                                    </div>
+                                    <span class="text-sm font-medium">25%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-warning-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">En réflexion</span>
+                                    </div>
+                                    <span class="text-sm font-medium">20%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-gray-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Inactif</span>
+                                    </div>
+                                    <span class="text-sm font-medium">10%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <h3 class="text-lg font-medium mb-4">Nouveaux acquéreurs</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium">Pierre Moreau</h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Aujourd'hui</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Recherche maison 4 pièces, 78</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-400">
+                                                Primo-accédant
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium">Laure Bernard</h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Hier</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Recherche appartement 3 pièces, Paris</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                                Investisseur
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/100x100" alt="User">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-sm font-medium">Thomas Klein</h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Il y a 2 jours</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Recherche studio, Paris 5e, 6e</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+                                                Pour son enfant
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button class="text-sm text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 font-medium">
+                                    Voir tous les nouveaux acquéreurs
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <h3 class="text-lg font-medium mb-4">Actions suggérées par l'IA</h3>
+                            <div class="space-y-4">
+                                <div class="p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-900/20">
+                                    <div class="flex items-start">
+                                        <div class="p-1 rounded-full bg-green-100 dark:bg-green-900/20 text-green-500 mr-3 mt-0.5">
+                                            <i class="fas fa-user-check text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-green-800 dark:text-green-400">Relancer Jean Dubois</h4>
+                                            <p class="text-xs text-green-700 dark:text-green-300 mt-1">N'a pas été contacté depuis plus de 3 jours et correspond à 2 nouveaux biens</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-3 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-200 dark:border-primary-900/20">
+                                    <div class="flex items-start">
+                                        <div class="p-1 rounded-full bg-primary-100 dark:bg-primary-900/20 text-primary-500 mr-3 mt-0.5">
+                                            <i class="fas fa-home text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-primary-800 dark:text-primary-400">Proposer Villa Magnolia</h4>
+                                            <p class="text-xs text-primary-700 dark:text-primary-300 mt-1">3 acquéreurs dans votre base correspondent parfaitement à ce bien</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-3 bg-warning-50 dark:bg-warning-900/10 rounded-lg border border-warning-200 dark:border-warning-900/20">
+                                    <div class="flex items-start">
+                                        <div class="p-1 rounded-full bg-warning-100 dark:bg-warning-900/20 text-warning-500 mr-3 mt-0.5">
+                                            <i class="fas fa-file-alt text-sm"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-warning-800 dark:text-warning-400">Mettre à jour fiches</h4>
+                                            <p class="text-xs text-warning-700 dark:text-warning-300 mt-1">7 fiches acquéreurs n'ont pas été mises à jour depuis plus de 30 jours</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button class="text-sm text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 font-medium">
+                                    Voir toutes les suggestions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Classification Emails Content -->
+                <div id="emails-content" class="p-6 hidden">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold mb-2">Classification Emails</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Triez et répondez efficacement à vos emails grâce à l'IA</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <button class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center">
+                                        <i class="fas fa-plus mr-2"></i>
+                                        Nouveau
+                                    </button>
+                                    <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                        <i class="fas fa-sync-alt text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400">
+                                        <i class="fas fa-inbox w-5 h-5 mr-2"></i>
+                                        <span>Boîte de réception</span>
+                                        <span class="ml-auto bg-primary-500 text-white text-xs py-0.5 px-2 rounded-full">24</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-tag w-5 h-5 mr-2 text-red-500"></i>
+                                        <span>Prioritaires</span>
+                                        <span class="ml-auto bg-red-500 text-white text-xs py-0.5 px-2 rounded-full">7</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-tag w-5 h-5 mr-2 text-yellow-500"></i>
+                                        <span>Demandes de visite</span>
+                                        <span class="ml-auto bg-yellow-500 text-white text-xs py-0.5 px-2 rounded-full">12</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-tag w-5 h-5 mr-2 text-green-500"></i>
+                                        <span>Acquéreurs</span>
+                                        <span class="ml-auto bg-green-500 text-white text-xs py-0.5 px-2 rounded-full">8</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-tag w-5 h-5 mr-2 text-blue-500"></i>
+                                        <span>Vendeurs</span>
+                                        <span class="ml-auto bg-blue-500 text-white text-xs py-0.5 px-2 rounded-full">5</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-tag w-5 h-5 mr-2 text-purple-500"></i>
+                                        <span>Partenaires</span>
+                                        <span class="ml-auto bg-purple-500 text-white text-xs py-0.5 px-2 rounded-full">3</span>
+                                    </a>
+                                </div>
+                                
+                                <div class="mt-8 space-y-1">
+                                    <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dossiers IA</h3>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-file-alt w-5 h-5 mr-2 text-gray-500"></i>
+                                        <span>À classer</span>
+                                        <span class="ml-auto bg-gray-500 text-white text-xs py-0.5 px-2 rounded-full">2</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-clock w-5 h-5 mr-2 text-gray-500"></i>
+                                        <span>En attente</span>
+                                        <span class="ml-auto bg-gray-500 text-white text-xs py-0.5 px-2 rounded-full">5</span>
+                                    </a>
+                                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                        <i class="fas fa-robot w-5 h-5 mr-2 text-primary-500"></i>
+                                        <span>Traités par IA</span>
+                                        <span class="ml-auto bg-primary-500 text-white text-xs py-0.5 px-2 rounded-full">115</span>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4">
+                                <h3 class="text-sm font-semibold mb-4">Performance de classification</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Précision de classification</span>
+                                            <span class="text-xs font-medium text-green-500">96%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-green-500 rounded-full" style="width: 96%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Temps moyen de traitement</span>
+                                            <span class="text-xs font-medium text-primary-500">4.2s</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-primary-500 rounded-full" style="width: 88%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Taux de réponse automatique</span>
+                                            <span class="text-xs font-medium text-blue-500">68%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full bg-blue-500 rounded-full" style="width: 68%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 p-3 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-200 dark:border-primary-900/20">
+                                    <p class="text-xs text-primary-800 dark:text-primary-300">
+                                        <i class="fas fa-lightbulb mr-1 text-primary-500"></i>
+                                        L'IA a traité <strong>124 emails</strong> aujourd'hui, vous faisant gagner environ <strong>2h30</strong> de temps.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-3">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+                                <div class="p-4 border-b dark:border-gray-700">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-medium">Boîte de réception</h3>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="relative">
+                                                <input type="text" placeholder="Rechercher un email..." class="pl-8 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100 w-64">
+                                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
+                                            </div>
+                                            <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-filter text-gray-600 dark:text-gray-400"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex space-x-2">
+                                        <button class="px-3 py-1.5 text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                                            <i class="fas fa-inbox mr-1"></i>
+                                            Tous (24)
+                                        </button>
+                                        <button class="px-3 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                            <i class="fas fa-tag mr-1 text-red-500"></i>
+                                            Prioritaires (7)
+                                        </button>
+                                        <button class="px-3 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                            <i class="fas fa-tag mr-1 text-yellow-500"></i>
+                                            Visites (12)
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <input type="checkbox" class="rounded text-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 h-4 w-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h4 class="text-sm font-semibold">Jean Dupont</h4>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400">
+                                                            Urgent
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">10:25</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="text-sm font-medium mb-1">Demande de visite urgente pour l'appartement rue Victor Hugo</h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                    Bonjour, je souhaiterais visiter l'appartement situé au 15 rue Victor Hugo dans les plus brefs délais. Je suis très intéressé et je voudrais le voir avant qu'il ne soit vendu. Serait-il possible d'organiser une visite dès demain ?
+                                                </p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-400">
+                                                        <i class="fas fa-robot mr-1"></i>
+                                                        Réponse suggérée disponible
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer bg-gray-50 dark:bg-gray-750">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <input type="checkbox" class="rounded text-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 h-4 w-4" checked="">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h4 class="text-sm font-semibold">Marie Leroux</h4>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                                                            Vente
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">09:45</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="text-sm font-medium mb-1">Confirmation accord vente maison 28 rue des Lilas</h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                    Cher Alexandre, je vous confirme notre accord pour la vente de la maison au 28 rue des Lilas. Pouvez-vous me préciser la date à laquelle nous pourrons signer le compromis chez le notaire ? J'aimerais organiser mon planning.
+                                                </p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
+                                                        <i class="fas fa-reply mr-1"></i>
+                                                        Répondu automatiquement
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <input type="checkbox" class="rounded text-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 h-4 w-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h4 class="text-sm font-semibold">Paul Renard</h4>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-400">
+                                                            Renseignement
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">09:12</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="text-sm font-medium mb-1">Renseignements sur terrain constructible Saint-Cloud</h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                    Bonjour, je suis intéressé par le terrain constructible situé à Saint-Cloud référence T23456. Pourriez-vous me donner plus d'informations sur la viabilité, le COS et les contraintes d'urbanisme ? Merci d'avance pour votre retour.
+                                                </p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                                        En attente de réponse
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors cursor-pointer">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <input type="checkbox" class="rounded text-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 h-4 w-4">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h4 class="text-sm font-semibold">Sophie Bernard</h4>
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
+                                                            Visite
+                                                        </span>
+                                                        <span class="text-xs text-gray-500 dark:text-gray-400">Hier</span>
+                                                    </div>
+                                                </div>
+                                                <h3 class="text-sm font-medium mb-1">Demande de visite pour l'appartement Place de la République</h3>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                                    Bonjour, je souhaiterais visiter l'appartement situé Place de la République. J'ai vu l'annonce sur votre site et les photos m'ont beaucoup plu. Seriez-vous disponible samedi après-midi pour une visite ?
+                                                </p>
+                                                <div class="flex items-center mt-2">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400">
+                                                        <i class="fas fa-tag mr-1"></i>
+                                                        Classé automatiquement
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 border-t dark:border-gray-700">
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            Affichage de 4 sur 24 emails
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50" disabled="">
+                                                <i class="fas fa-chevron-left text-gray-600 dark:text-gray-400"></i>
+                                            </button>
+                                            <span class="text-sm text-gray-600 dark:text-gray-400">Page 1 sur 6</span>
+                                            <button class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                                <i class="fas fa-chevron-right text-gray-600 dark:text-gray-400"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Content -->
+                <div id="analytics-content" class="p-6 hidden">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold mb-2">Analytiques</h2>
+                        <p class="text-gray-600 dark:text-gray-400">Visualisez vos performances et obtenez des insights sur votre activité</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Biens en portefeuille</p>
+                                    <h3 class="text-3xl font-bold mt-1">42</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>+3 ce mois-ci</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-primary-50 dark:bg-primary-900/20">
+                                    <i class="fas fa-home text-xl text-primary-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Visites organisées</p>
+                                    <h3 class="text-3xl font-bold mt-1">28</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>+35% vs mois dernier</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-success-50 dark:bg-success-900/20">
+                                    <i class="fas fa-calendar-check text-xl text-success-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Taux de conversion</p>
+                                    <h3 class="text-3xl font-bold mt-1">7.2%</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>+1.2pts ce trimestre</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-warning-50 dark:bg-warning-900/20">
+                                    <i class="fas fa-percentage text-xl text-warning-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">CA prévisionnel</p>
+                                    <h3 class="text-3xl font-bold mt-1">142K€</h3>
+                                    <p class="text-xs font-medium text-green-500 mt-2"><i class="fas fa-arrow-up mr-1"></i>+12% sur objectif</p>
+                                </div>
+                                <div class="rounded-full p-3 bg-info-50 dark:bg-info-900/20">
+                                    <i class="fas fa-euro-sign text-xl text-info-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Évolution des performances</h3>
+                                <div class="flex items-center space-x-2">
+                                    <button class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+                                        <i class="fas fa-sync-alt text-gray-600 dark:text-gray-400"></i>
+                                    </button>
+                                    <select class="text-sm border border-gray-300 dark:border-gray-600 rounded-md p-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                        <option>Cette année</option>
+                                        <option>Cette semestre</option>
+                                        <option>Ce trimestre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="h-80">
+                                <canvas id="performancesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <h3 class="text-lg font-medium mb-4">Répartition des biens</h3>
+                            <div class="h-80">
+                                <canvas id="biensChart"></canvas>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-primary-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Appartements</span>
+                                    </div>
+                                    <span class="text-sm font-medium">62%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-success-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Maisons</span>
+                                    </div>
+                                    <span class="text-sm font-medium">28%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-warning-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Terrains</span>
+                                    </div>
+                                    <span class="text-sm font-medium">7%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full bg-info-500 mr-2"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Commerces</span>
+                                    </div>
+                                    <span class="text-sm font-medium">3%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <h3 class="text-lg font-medium mb-4">Biens les plus consultés</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/140x140" alt="Property" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-medium">Appartement 3P - Paris 16e</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">82m² - 745 000 €</p>
+                                        <div class="flex items-center mt-1 space-x-2">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-eye text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">245</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-calendar text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">12 visites</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/140x140" alt="Property" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-medium">Villa Magnolia - Saint-Cloud</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">210m² - 1 250 000 €</p>
+                                        <div class="flex items-center mt-1 space-x-2">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-eye text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">189</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-calendar text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">8 visites</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden mr-3">
+                                        <img src="https://fakeimg.pl/140x140" alt="Property" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-medium">Studio - Place de la République</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">28m² - 320 000 €</p>
+                                        <div class="flex items-center mt-1 space-x-2">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-eye text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">156</span>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-calendar text-xs text-gray-500 dark:text-gray-400 mr-1"></i>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">5 visites</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium">Analyse du marché</h3>
+                                <select class="text-sm border border-gray-300 dark:border-gray-600 rounded-md p-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                    <option>Paris et région parisienne</option>
+                                    <option>Paris intra-muros</option>
+                                    <option>Banlieue Ouest</option>
+                                </select>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-4">
+                                    <div class="p-4 bg-gray-50 dark:bg-gray-750 rounded-lg">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4 class="text-sm font-medium">Prix moyen au m²</h4>
+                                            <span class="text-sm font-bold text-primary-500">10 450 €</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-primary-500 rounded-full" style="width: 72%"></div>
+                                            </div>
+                                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">+2.1%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-gray-50 dark:bg-gray-750 rounded-lg">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4 class="text-sm font-medium">Délai moyen de vente</h4>
+                                            <span class="text-sm font-bold text-success-500">42 jours</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-success-500 rounded-full" style="width: 65%"></div>
+                                            </div>
+                                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">-5 jours</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-4 bg-gray-50 dark:bg-gray-750 rounded-lg">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4 class="text-sm font-medium">Taux de négociation</h4>
+                                            <span class="text-sm font-bold text-warning-500">3.8%</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                <div class="h-full bg-warning-500 rounded-full" style="width: 38%"></div>
+                                            </div>
+                                            <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">-0.5pts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-200 dark:border-primary-900/20">
+                                        <h4 class="text-sm font-medium text-primary-800 dark:text-primary-400 mb-2">
+                                            <i class="fas fa-chart-line mr-1"></i>
+                                            Insights IA
+                                        </h4>
+                                        <div class="space-y-2">
+                                            <p class="text-xs text-primary-700 dark:text-primary-300">
+                                                <i class="fas fa-arrow-trend-up mr-1"></i>
+                                                <strong>Tendance détectée :</strong> Forte augmentation (+24%) des recherches pour les biens avec terrasse ou balcon.
+                                            </p>
+                                            <p class="text-xs text-primary-700 dark:text-primary-300">
+                                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                                <strong>Quartiers en hausse :</strong> Paris 12e, Paris 14e, Boulogne-Billancourt.
+                                            </p>
+                                            <p class="text-xs text-primary-700 dark:text-primary-300">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                <strong>Prévision :</strong> Stabilisation des prix attendue d'ici 2-3 mois selon nos modèles.
+                                            </p>
+                                        </div>
+                                        
+                                        <div class="mt-4">
+                                            <button class="w-full px-3 py-1.5 text-xs font-medium text-primary-500 border border-primary-500 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                                                Obtenir analyse détaillée
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 p-4 bg-gray-50 dark:bg-gray-750 rounded-lg">
+                                        <h4 class="text-sm font-medium mb-3">Type de biens les plus recherchés</h4>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-xs">3 pièces avec balcon</span>
+                                                    <span class="text-xs font-medium">42%</span>
+                                                </div>
+                                                <div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-primary-500 rounded-full" style="width: 42%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-xs">Maison avec jardin</span>
+                                                    <span class="text-xs font-medium">28%</span>
+                                                </div>
+                                                <div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-success-500 rounded-full" style="width: 28%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-xs">Studio/2 pièces invest.</span>
+                                                    <span class="text-xs font-medium">20%</span>
+                                                </div>
+                                                <div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-warning-500 rounded-full" style="width: 20%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // App Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for preferred theme in localStorage
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Theme Toggle - Welcome Screen
+            const themeToggleWelcome = document.getElementById('theme-toggle-welcome');
+            themeToggleWelcome.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                
+                // Update the icon
+                const isDark = document.documentElement.classList.contains('dark');
+                themeToggleWelcome.innerHTML = isDark 
+                    ? '<i class="fas fa-sun text-gray-600 dark:text-gray-400"></i>'
+                    : '<i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>';
+                
+                // Save preference
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+            
+            // Initialize icon based on current theme
+            const isDark = document.documentElement.classList.contains('dark');
+            themeToggleWelcome.innerHTML = isDark 
+                ? '<i class="fas fa-sun text-gray-600 dark:text-gray-400"></i>'
+                : '<i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>';
+            
+            // Chat functionality for both coach screens
+            function initializeChat(inputId, sendBtnId, containerId) {
+                const chatInput = document.getElementById(inputId);
+                const sendButton = document.getElementById(sendBtnId);
+                const chatContainer = document.getElementById(containerId);
+                
+                if (!chatInput || !sendButton || !chatContainer) return;
+                
+                function scrollToBottom() {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+                
+                function getCurrentTime() {
+                    const now = new Date();
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                }
+                
+                function addUserMessage(message) {
+                    const time = getCurrentTime();
+                    const userMessageHTML = `
+                        <div class="flex items-end justify-end space-x-2 animate-fade-in-up">
+                            <div class="bg-primary-500 p-3 rounded-lg message-bubble-user text-white max-w-[85%]">
+                                <p class="text-sm">${message}</p>
+                                <span class="text-xs text-white/70 mt-1 block">${time}</span>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <img src="https://fakeimg.pl/60x60" alt="Profile" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatContainer.insertAdjacentHTML('beforeend', userMessageHTML);
+                    scrollToBottom();
+                }
+                
+                function addAIMessage(message) {
+                    const time = getCurrentTime();
+                    const aiMessageHTML = `
+                        <div class="flex items-end space-x-2 animate-fade-in-up">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai max-w-[85%]">
+                                <p class="text-sm">${message}</p>
+                                <span class="text-xs text-gray-500 mt-1 block">${time}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatContainer.insertAdjacentHTML('beforeend', aiMessageHTML);
+                    scrollToBottom();
+                }
+                
+                function showTypingIndicator() {
+                    const typingHTML = `
+                        <div id="typing-${containerId}" class="flex items-end space-x-2 animate-fade-in-up">
+                            <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white flex-shrink-0">
+                                <i class="fas fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg message-bubble-ai">
+                                <div class="flex space-x-1">
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse" style="animation-delay: 0.2s"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-pulse" style="animation-delay: 0.4s"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatContainer.insertAdjacentHTML('beforeend', typingHTML);
+                    scrollToBottom();
+                }
+                
+                function hideTypingIndicator() {
+                    const typingIndicator = document.getElementById(`typing-${containerId}`);
+                    if (typingIndicator) {
+                        typingIndicator.remove();
+                    }
+                }
+                
+                const aiResponses = [
+                    "Je peux vous aider à optimiser la description de ce bien pour mettre en avant les points forts qui correspondent aux tendances actuelles du marché.",
+                    "D'après mon analyse, les acquéreurs potentiels dans cette zone recherchent prioritairement la proximité des transports et des espaces verts. Voulez-vous que j'intègre ces éléments dans vos communications ?",
+                    "J'ai préparé une liste de 5 biens similaires récemment vendus dans ce quartier pour vous aider à fixer le prix optimal.",
+                    "Votre taux de réponse aux emails est excellent (94%) ! Continuez comme ça, c'est un facteur clé de satisfaction client.",
+                    "Je détecte une augmentation de 18% des demandes pour des maisons avec jardin ce mois-ci. C'est peut-être le moment de contacter vos vendeurs potentiels sur ce segment."
+                ];
+                
+                function getRandomAIResponse() {
+                    return aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                }
+                
+                function handleSendMessage() {
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        // Add user message
+                        addUserMessage(message);
+                        chatInput.value = '';
+                        
+                        // Show typing indicator
+                        setTimeout(() => {
+                            showTypingIndicator();
+                            
+                            // Hide typing and show AI response after a delay
+                            setTimeout(() => {
+                                hideTypingIndicator();
+                                addAIMessage(getRandomAIResponse());
+                            }, 1500);
+                        }, 500);
+                    }
+                }
+                
+                sendButton.addEventListener('click', handleSendMessage);
+                
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleSendMessage();
+                    }
+                });
+                
+                // Copy initial messages if empty (for main coach interface)
+                if (containerId === 'main-chat-container' && chatContainer.innerHTML.trim() === '') {
+                    // Clone welcome messages from chat-container to main-chat-container
+                    const originalChat = document.getElementById('chat-container');
+                    if (originalChat) {
+                        chatContainer.innerHTML = originalChat.innerHTML;
+                        scrollToBottom();
+                    }
+                }
+                
+                // Ensure chat is scrolled to bottom
+                setTimeout(() => {
+                    scrollToBottom();
+                }, 100);
+            }
+            
+            // Initialize both chat interfaces
+            initializeChat('chat-input', 'send-message', 'chat-container');
+            initializeChat('main-chat-input', 'main-send-message', 'main-chat-container');
+            
+            // Authentication Form Handling
+            const authForm = document.getElementById('auth-form');
+            const mainApp = document.getElementById('main-app');
+            const loginScreen = document.getElementById('login-screen');
+            const authScreen = document.getElementById('auth-screen');
+            
+            authForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const emailAccess = document.getElementById('email-access').checked;
+                
+                if (!email) {
+                    alert('Veuillez entrer votre adresse email professionnelle.');
+                    return;
+                }
+                
+                if (!emailAccess) {
+                    alert('Vous devez autoriser IMMO.AI à accéder à votre boîte email pour continuer.');
+                    return;
+                }
+                
+                // Simulate loading
+                loginScreen.innerHTML = `
+                    <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl text-center">
+                        <h2 class="text-2xl font-bold gradient-text">Initialisation de IMMO.AI</h2>
+                        <div class="flex justify-center">
+                            <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_l4xrji3h.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></lottie-player>
+                        </div>
+                        <div class="space-y-2">
+                            <p class="text-gray-600 dark:text-gray-400">Connexion à votre boîte email...</p>
+                            <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-primary-500 rounded-full animate-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // After loading, show Coach IA
+                setTimeout(() => {
+                    loginScreen.classList.add('hidden');
+                    authScreen.classList.remove('hidden');
+                }, 3000);
+            });
+            
+            // From Coach IA to Dashboard
+            const gotoDashboardBtn = document.getElementById('goto-dashboard-btn');
+            gotoDashboardBtn.addEventListener('click', function() {
+                authScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                
+                // Initialize the dashboard
+                initializeDashboard();
+                
+                // Set active nav item to Coach IA by default
+                document.getElementById('page-title').textContent = 'Coach IA';
+                setActiveNavItem('nav-coach');
+                document.getElementById('coach-content').classList.remove('hidden');
+                document.getElementById('dashboard-content').classList.add('hidden');
+                document.getElementById('crm-content').classList.add('hidden');
+                document.getElementById('emails-content').classList.add('hidden');
+                document.getElementById('analytics-content').classList.add('hidden');
+            });
+            
+            // Theme Toggle - Main App
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                
+                // Update the icon
+                const isDark = document.documentElement.classList.contains('dark');
+                themeToggle.innerHTML = isDark 
+                    ? '<i class="fas fa-sun text-gray-600 dark:text-gray-400"></i>'
+                    : '<i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>';
+                
+                // Save preference
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+                
+            // Logout button
+            const logoutBtn = document.getElementById('logout-btn');
+            logoutBtn.addEventListener('click', function() {
+                if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    mainApp.classList.add('hidden');
+                    authScreen.classList.add('hidden');
+                    
+                    // Reset login form
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('email-access').checked = false;
+                    
+                    // Show login screen again
+                    loginScreen.innerHTML = `
+                        <div class="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+                            <div class="text-center">
+                                <h2 class="text-4xl font-extrabold gradient-text">IMMO.AI</h2>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400">Solution IA pour les professionnels de l'immobilier</p>
+                            </div>
+                            
+                            <div class="flex justify-center">
+                                <lottie-player src="https://assets7.lottiefiles.com/packages/lf20_jcikwtux.json" background="transparent" speed="1" style="width: 200px; height: 200px;" loop autoplay></lottie-player>
+                            </div>
+                            
+                            <form id="auth-form" class="mt-8 space-y-6">
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email professionnel</label>
+                                    <div class="mt-1">
+                                        <input id="email" name="email" type="email" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100" placeholder="votre@agence-immobiliere.com">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mot de passe</label>
+                                    <div class="mt-1">
+                                        <input id="password" name="password" type="password" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-gray-100" placeholder="••••••••">
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="email-access" name="email-access" type="checkbox" class="w-5 h-5 text-primary-500 border-gray-300 rounded focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="email-access" class="font-medium text-gray-700 dark:text-gray-300">J'autorise IMMO.AI à accéder à ma boîte email professionnelle</label>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">Nécessaire pour l'analyse et la classification automatique des emails.</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <button type="submit" class="w-full px-6 py-3 text-base font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                                        Se connecter
+                                    </button>
+                                </div>
+                                
+                                <div class="text-center text-sm">
+                                    <a href="#" class="font-medium text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                                        Besoin d'aide ? Contactez notre support
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    `;
+                    loginScreen.classList.remove('hidden');
+                    
+                    // Reattach events
+                    document.getElementById('auth-form').addEventListener('submit', authForm.onsubmit);
+                }
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.querySelector('aside');
+            const mainContent = document.querySelector('main');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+            
+            // Sidebar collapse
+            const collapseSidebarBtn = document.getElementById('collapse-sidebar');
+            collapseSidebarBtn.addEventListener('click', function() {
+                const isCollapsed = sidebar.classList.contains('w-20');
+                
+                if (isCollapsed) {
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+                    mainContent.classList.remove('ml-20');
+                    mainContent.classList.add('ml-64');
+                    
+                    // Show text elements
+                    document.querySelectorAll('.sidebar-text').forEach(el => {
+                        el.classList.remove('hidden');
+                    });
+                } else {
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-20');
+                    mainContent.classList.remove('ml-64');
+                    mainContent.classList.add('ml-20');
+                    
+                    // Hide text elements
+                    document.querySelectorAll('.sidebar-text').forEach(el => {
+                        el.classList.add('hidden');
+                    });
+                }
+            });
+            
+            // Navigation handling in sidebar
+            function setActiveNavItem(activeItemId) {
+                // Reset all nav items
+                document.querySelectorAll('nav a').forEach(navItem => {
+                    navItem.classList.remove('bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-500', 'dark:text-primary-400');
+                    navItem.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700', 'hover:text-primary-500', 'dark:hover:text-primary-400');
+                    
+                    // Reset icons
+                    const icon = navItem.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('text-primary-500', 'dark:text-primary-400');
+                        icon.classList.add('text-gray-500', 'dark:text-gray-400', 'group-hover:text-primary-500', 'dark:group-hover:text-primary-400');
+                    }
+                });
+                
+                // Set active nav item
+                const activeItem = document.getElementById(activeItemId);
+                if (activeItem) {
+                    activeItem.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700', 'hover:text-primary-500', 'dark:hover:text-primary-400');
+                    activeItem.classList.add('bg-primary-50', 'dark:bg-primary-900/20', 'text-primary-500', 'dark:text-primary-400');
+                    
+                    // Set active icon
+                    const icon = activeItem.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('text-gray-500', 'dark:text-gray-400', 'group-hover:text-primary-500', 'dark:group-hover:text-primary-400');
+                        icon.classList.add('text-primary-500', 'dark:text-primary-400');
+                    }
+                }
+            }
+            
+            // Set up navigation between pages
+            document.getElementById('nav-coach').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('page-title').textContent = 'Coach IA';
+                setActiveNavItem('nav-coach');
+                document.getElementById('coach-content').classList.remove('hidden');
+                document.getElementById('dashboard-content').classList.add('hidden');
+                document.getElementById('crm-content').classList.add('hidden');
+                document.getElementById('emails-content').classList.add('hidden');
+                document.getElementById('analytics-content').classList.add('hidden');
+            });
+            
+            document.getElementById('nav-dashboard').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('page-title').textContent = 'Tableau de bord';
+                setActiveNavItem('nav-dashboard');
+                document.getElementById('coach-content').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.remove('hidden');
+                document.getElementById('crm-content').classList.add('hidden');
+                document.getElementById('emails-content').classList.add('hidden');
+                document.getElementById('analytics-content').classList.add('hidden');
+            });
+            
+            document.getElementById('nav-crm').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('page-title').textContent = 'CRM Acquéreurs';
+                setActiveNavItem('nav-crm');
+                document.getElementById('coach-content').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.add('hidden');
+                document.getElementById('crm-content').classList.remove('hidden');
+                document.getElementById('emails-content').classList.add('hidden');
+                document.getElementById('analytics-content').classList.add('hidden');
+                
+                // Initialize CRM charts if needed
+                initializeCrmCharts();
+            });
+            
+            document.getElementById('nav-emails').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('page-title').textContent = 'Classification Emails';
+                setActiveNavItem('nav-emails');
+                document.getElementById('coach-content').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.add('hidden');
+                document.getElementById('crm-content').classList.add('hidden');
+                document.getElementById('emails-content').classList.remove('hidden');
+                document.getElementById('analytics-content').classList.add('hidden');
+            });
+            
+            document.getElementById('nav-analytics').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('page-title').textContent = 'Analytiques';
+                setActiveNavItem('nav-analytics');
+                document.getElementById('coach-content').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.add('hidden');
+                document.getElementById('crm-content').classList.add('hidden');
+                document.getElementById('emails-content').classList.add('hidden');
+                document.getElementById('analytics-content').classList.remove('hidden');
+                
+                // Initialize Analytics charts if needed
+                initializeAnalyticsCharts();
+            });
+        });
+        
+        // Initialize Dashboard
+        function initializeDashboard() {
+            // AI Activity Chart
+            const ctx = document.getElementById('aiActivityChart');
+            if (!ctx) return;
+            
+            const aiActivityChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['8h', '9h', '10h', '11h', '12h', '13h', '14h', '15h'],
+                    datasets: [
+                        {
+                            label: 'Emails traités',
+                            data: [12, 19, 25, 16, 8, 15, 22, 30],
+                            borderColor: '#0072FF',
+                            backgroundColor: 'rgba(0, 114, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Acquéreurs détectés',
+                            data: [2, 4, 3, 5, 1, 3, 6, 8],
+                            borderColor: '#00D68F',
+                            backgroundColor: 'rgba(0, 214, 143, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Emails prioritaires',
+                            data: [1, 3, 5, 2, 0, 2, 3, 4],
+                            borderColor: '#FF5B7F',
+                            backgroundColor: 'rgba(255, 91, 127, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 6
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(200, 200, 200, 0.15)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Simulate real-time data updates
+            setInterval(() => {
+                if (!aiActivityChart) return;
+                
+                // Add new data to charts
+                const datasets = aiActivityChart.data.datasets;
+                datasets.forEach(dataset => {
+                    const lastValue = dataset.data[dataset.data.length - 1];
+                    const newValue = Math.max(0, lastValue + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 5));
+                    dataset.data.push(newValue);
+                    dataset.data.shift();
+                });
+                
+                // Update time labels
+                const lastHour = parseInt(aiActivityChart.data.labels[aiActivityChart.data.labels.length - 1]);
+                const newHour = (lastHour + 1) % 24;
+                aiActivityChart.data.labels.push(`${newHour}h`);
+                aiActivityChart.data.labels.shift();
+                
+                aiActivityChart.update();
+                
+                // Update stats cards with random increments
+                const statElements = document.querySelectorAll('.text-3xl.font-bold');
+                statElements.forEach(el => {
+                    const currentValue = parseInt(el.textContent);
+                    if (!isNaN(currentValue)) {
+                        const increment = Math.floor(Math.random() * 3);
+                        el.textContent = currentValue + increment;
+                    }
+                });
+                
+                // Add new AI action occasionally
+                if (Math.random() > 0.7) {
+                    addNewAIAction();
+                }
+            }, 10000);
+        }
+        
+        // Initialize CRM Charts
+        function initializeCrmCharts() {
+            const acquereursCtx = document.getElementById('acquereursChart');
+            if (acquereursCtx) {
+                new Chart(acquereursCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Recherche active', 'Visite programmée', 'En réflexion', 'Inactif'],
+                        datasets: [{
+                            data: [45, 25, 20, 10],
+                            backgroundColor: ['#0072FF', '#00D68F', '#FFAA00', '#718096'],
+                            borderColor: 'transparent',
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize Analytics Charts
+        function initializeAnalyticsCharts() {
+            const performancesCtx = document.getElementById('performancesChart');
+            if (performancesCtx) {
+                new Chart(performancesCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                        datasets: [
+                            {
+                                label: 'Ventes conclues',
+                                data: [4, 5, 7, 6, 8, 9, 10, 8, 12, 14, 13, 15],
+                                borderColor: '#0072FF',
+                                backgroundColor: 'rgba(0, 114, 255, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Mandats signés',
+                                data: [8, 10, 12, 9, 11, 13, 15, 14, 18, 19, 16, 22],
+                                borderColor: '#00D68F',
+                                backgroundColor: 'rgba(0, 214, 143, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    boxWidth: 6
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    drawBorder: false,
+                                    color: 'rgba(200, 200, 200, 0.15)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            const biensCtx = document.getElementById('biensChart');
+            if (biensCtx) {
+                new Chart(biensCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Appartements', 'Maisons', 'Terrains', 'Commerces'],
+                        datasets: [{
+                            data: [62, 28, 7, 3],
+                            backgroundColor: ['#0072FF', '#00D68F', '#FFAA00', '#00C7E5'],
+                            borderColor: 'transparent',
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Add a new AI action to the recent actions list
+        function addNewAIAction() {
+            const actionsList = document.querySelector('.bg-white.dark\\:bg-gray-800 .space-y-4');
+            if (!actionsList) return;
+            
+            const actions = [
+                {
+                    icon: 'envelope',
+                    bg: 'green',
+                    title: 'Email classifié',
+                    desc: 'Demande d\'informations sur un bien'
+                },
+                {
+                    icon: 'user-check',
+                    bg: 'blue',
+                    title: 'Profil actualisé',
+                    desc: 'Mise à jour des préférences client'
+                },
+                {
+                    icon: 'search',
+                    bg: 'purple',
+                    title: 'Analyse terminée',
+                    desc: 'Rapport de marché du secteur Nord'
+                }
+            ];
+            
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
+            
+            const newActionHTML = `
+                <div class="flex items-start space-x-3 animate-pulse-slow">
+                    <div class="mt-1 p-2 rounded-full bg-${randomAction.bg}-100 dark:bg-${randomAction.bg}-900/20 text-${randomAction.bg}-500">
+                        <i class="fas fa-${randomAction.icon} text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium">${randomAction.title}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${randomAction.desc}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">À l'instant</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add to beginning and limit list to 4 items
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newActionHTML;
+            const newAction = tempDiv.firstElementChild;
+            
+            actionsList.prepend(newAction);
+            
+            // Remove after animation
+            setTimeout(() => {
+                newAction.classList.remove('animate-pulse-slow');
+            }, 2000);
+            
+            // Keep only 4 most recent
+            if (actionsList.children.length > 4) {
+                actionsList.removeChild(actionsList.lastElementChild);
+            }
+        }
+    </script>
+</body>
+</html>
